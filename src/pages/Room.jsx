@@ -15,7 +15,7 @@ function Room() {
   useEffect(() => {
     if (!socket) {
       console.log('[DEBUG FRONTEND] Creating global socket connection');
-      socket = io('http://localhost:4000', {
+      socket = io('https://rapid-helpful-concrete.glitch.me', {
         transports: ['websocket'],
         pingTimeout: 1800000,
         pingInterval: 25000,
