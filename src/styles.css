@@ -1,6 +1,6 @@
-/**************************************************************
-  FONT & BASIC RESET
-***************************************************************/
+/************************************************************
+  1) BASIC RESET & FONTS
+*************************************************************/
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 * {
@@ -11,77 +11,33 @@
   transition: all 0.3s ease;
 }
 
-/**************************************************************
-  BODY & GLOBAL BACKGROUND
-***************************************************************/
-/* We'll simulate a blurred background image from the same 
-   video source. By default, we reference the same link 
-   you used in <video> for a "mirror" effect. 
-   If you switch video URLs, update here as well. 
-*/
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: url("https://rr2---sn-cvh7knzl.googlevideo.com/videoplayback?expire=1738153522&ei=0smZZ--EJNnap-oPge-q6Ak&ip=105.102.217.68&id=o-AF31gBOLVwx25ONs9TibKUn-S62WQZHOYLkiYVD3F_06&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&bui=AY2Et-My1v2ZQNHDhsfYzqMd2jncnBI03yiqY2Hrjx8BAXd9qDtRFEzyY7axP5ZgHWj3kkV3iF7To7nb&spc=9kzgDSGAhJTAhWCpO8s7y5gh4iAYz8z7JkiP-RJAmldAkIWM1rT6IhkA4rz923keIQ&vprv=1&svpuc=1&mime=video%2Fmp4&ns=EO-06yqbGqqvEM1D5qR_V9AQ&rqh=1&gir=yes&clen=28769077&ratebypass=yes&dur=562.898&lmt=1738110195639741&fexp=24350590,24350737,24350824,24350827,24350933,24350961,24350977,24350999,24351028,24351059,24351081,51326932,51331020,51353498,51371294&c=MWEB&sefc=1&txp=4538534&n=T-V3EABB69UAwQ&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRgIhAPbztGZY-qNiYLeIQyf8aIAhv0uUOzhhsvssujlwIVQeAiEAlGuDRJHASG_6olBhGbUPGL5AmXDkbhKuG7YPfhHQzCg%3D&title=Samsung%20Galaxy%20S25%2FUltra%20Impressions%3A%20What%20Happened%3F&rm=sn-5abxgpxuxaxjvh-5aby7e,sn-hgnek7e&rrc=79,104&req_id=1403978c5e5a3ee&cmsv=e&rms=rdu,au&redirect_counter=2&cms_redirect=yes&ipbypass=yes&met=1738147361,&mh=b3&mip=14.194.118.66&mm=29&mn=sn-cvh7knzl&ms=rdu&mt=1738147028&mv=m&mvi=2&pl=22&lsparams=ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=AGluJ3MwRAIgNzMo4J-h3eTihLeqeuK8XvOk7gMyGo3GU5BwlV6T8akCIHhERxwKX8-SyZRAo1uG5HcesH4E4EhAGu6HmA3L8Noe")
-              no-repeat center center / cover;
-  filter: blur(20px) brightness(0.3);
-  z-index: -1;
-}
-
-/*
-body {
-  min-height: 100vh;
-  overflow-x: hidden;
-  background-color: #222; /* Fallback if image fails 
-}
-*/
-/* 
-
-1. this is bright animated background
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/************************************************************
+  2) BACKGROUND & GLOBAL
+*************************************************************/
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  background: linear-gradient(-45deg, #ff6b6b, #f7b801, #6bffb5, #4f9eff);
+  overflow: auto;
+  background: linear-gradient(-45deg, #0000, #15156b, #00001a, #003516, #00071f, #030926, #01012e, #2e0000, #000000, #000000);
   background-size: 400% 400%;
-  animation: gradientAnimation 10s ease infinite;
+  animation: gradientAnimation 1200s ease infinite;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes gradientAnimation {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-*/
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: linear-gradient(-45deg, #1e1e2e, #282a36, #212121, #0f0f0f);
-  background-size: 400% 400%;
-  animation: gradientAnimation 10s ease infinite;
-}
-
-@keyframes gradientAnimation {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-
-/**************************************************************
-  3D & GLASS-LIKE UTILS
-***************************************************************/
+/************************************************************
+  3) GLASS BUTTON
+*************************************************************/
 .glass-button {
   display: inline-block;
   padding: 12px 25px;
@@ -98,15 +54,32 @@ body {
   transform-style: preserve-3d;
   transition: transform 0.4s ease, background 0.4s ease;
 }
-
 .glass-button:hover {
   transform: translateZ(15px) rotateX(5deg);
   background: rgba(255,255,255,0.35);
 }
 
-/**************************************************************
-  LOADING SCREEN 
-***************************************************************/
+.leave-button-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+/* Red-glass button variation */
+.red-glass {
+  background: rgba(255, 0, 0, 0.3);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+}
+
+.red-glass:hover {
+  background: rgba(255, 0, 0, 0.5);
+  transform: translateZ(15px) rotateX(5deg);
+}
+
+/************************************************************
+  4) LOADING SCREEN
+*************************************************************/
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -126,12 +99,10 @@ body {
   border-radius: 50%;
   animation: spin 1.2s linear infinite;
   margin-bottom: 20px;
-  transform: perspective(800px) translateZ(0) rotateX(0deg);
 }
-
 @keyframes spin {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .loading-text {
@@ -141,33 +112,14 @@ body {
   text-shadow: 0 0 10px rgba(255,255,255,0.5);
   animation: pulseText 1.5s infinite;
 }
-
 @keyframes pulseText {
-  0%,100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
+  0%,100% { opacity: 0.6; }
+  50%     { opacity: 1;   }
 }
 
-/**************************************************************
-  APP CONTAINER
-***************************************************************/
-.app-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 30px;
-  color: #fff;
-}
-
-h1, h2, h3 {
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-
-/**************************************************************
-  HOME PAGE 
-***************************************************************/
+/************************************************************
+  5) HOME PAGE
+*************************************************************/
 .home-page {
   display: flex;
   flex-direction: column;
@@ -205,118 +157,119 @@ h1, h2, h3 {
   color: rgba(255,255,255,0.8);
 }
 
-.home-form button {
-  /* Using the .glass-button style for consistency */
-  @extend .glass-button;
-}
-
-/**************************************************************
-  ROOM PAGE
-***************************************************************/
+/************************************************************
+  6) ROOM PAGE LAYOUT
+*************************************************************/
 .room-page {
-  margin-top: 40px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  width: 100%;
+  padding: 20px;
 }
 
-.room-page h2 {
+.room-header {
   margin-bottom: 20px;
-  font-size: 2rem;
 }
 
-.video-chat-container {
+/* Main layout: left "video-area" & right "chat-area" */
+.main-layout {
   display: flex;
   flex-direction: row;
-  width: 90%;
-  max-width: 1400px;
   gap: 20px;
 }
 
-/**************************************************************
-  VIDEO CONTAINER 
-  - 2/3 screen for video
-  - dynamic "playing" vs "paused" backgrounds
-***************************************************************/
-.video-container {
-  flex: 2; /* 2/3 of available space */
-  border-radius: 15px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-  padding: 20px;
-  position: relative;
-  transition: background 0.7s ease;
-}
-
-.video-container.playing {
-  background: rgba(30,150,30,0.2);
-}
-
-.video-container.paused {
-  background: rgba(150,30,30,0.2);
-}
-
-/**************************************************************
-  VIDEO PLAYER 
-***************************************************************/
-.video-player {
-  border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  padding: 20px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-}
-
-.video-player h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-}
-
-.video-player p {
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-}
-
-.video-player video {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-}
-
-.video-player button {
-  @extend .glass-button;
-  margin-bottom: 8px;
-}
-
-/**************************************************************
-  USER VIDEO FEED
-***************************************************************/
-.user-video-feed {
-  margin-top: 20px;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 15px;
-  background: rgba(255,255,255,0.08);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-/**************************************************************
-  CHAT SECTION (1/3 screen, iMessage style)
-***************************************************************/
-.chat-section {
-  flex: 1; /* 1/3 of available space */
+.video-area {
+  flex: 2; 
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+/* The row of small user videos on top (thumbnails) */
+.top-thumbnails {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* The main big video area (synced video player) */
+.big-video {
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right side: chat panel */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/************************************************************
+  7) VIDEO PLAYER
+*************************************************************/
+.video-player {
+  width: 100%;
+  /* We removed extra <br/> spacing in the JSX 
+     so the controls appear right below the video. */
+}
+
+/************************************************************
+  8) WEBRTC SECTION
+*************************************************************/
+.webrtc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.video-thumbnails {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Each user video (local/remote) for thumbnails */
+.user-video {
+  width: 120px;
+  height: 80px;
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.webrtc-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/************************************************************
+  9) CHAT SECTION
+*************************************************************/
+.chat-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(10px);
   border-radius: 15px;
   border: 1px solid rgba(255,255,255,0.2);
   padding: 20px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  overflow-y:auto;
+  /* Increased to be taller, like your design */
+  min-height: 70vh;
+  max-height: 70vh;
+
+  width: 100%;
 }
 
 .chat-section h3 {
@@ -326,35 +279,46 @@ h1, h2, h3 {
 
 .messages {
   flex: 1;
-  overflow-y: auto;
+  overflow-y:auto;
   border: 2px solid rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.04);
   border-radius: 10px;
   padding: 10px;
   box-shadow: inset 0 5px 15px rgba(0,0,0,0.4);
   margin-bottom: 10px;
-  position: relative;
 }
 
-/* iMessage-like bubbles (all on the left for simplicity).
-   If you want them on both sides, add logic for "self" vs "others". */
+
 .message {
-  display: inline-block;
+  display: block;            /* each message is its own block */
   background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);
   color: #333;
   padding: 10px 15px;
   border-radius: 20px;
   margin: 5px 0;
-  max-width: 80%;
+  width: 70%;            /* narrower bubble for a more "chat-like" look */
   word-break: break-word;
   animation: fadeInBubble 0.3s ease forwards;
-  position: relative;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
+/* Align your own messages to the right */
+.message.own {
+  margin-left: auto;         /* push it to the right */
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+  text-align: right;
+}
+
+/* Align others' messages to the left */
+.message.other {
+  margin-right: auto;        /* push it to the left */
+  text-align: left;
+}
+
+
 @keyframes fadeInBubble {
-  from { opacity: 0; transform: translateY(5px);}
-  to { opacity: 1; transform: translateY(0);}
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
 .messages::-webkit-scrollbar {
@@ -383,22 +347,24 @@ h1, h2, h3 {
   outline: none;
 }
 
-.chat-input button {
-  @extend .glass-button;
-}
-
-/**************************************************************
-  MEDIA QUERIES
-***************************************************************/
+/************************************************************
+  10) MEDIA QUERIES (Responsive)
+*************************************************************/
 @media (max-width: 992px) {
-  .video-chat-container {
+  .main-layout {
     flex-direction: column;
   }
-  
-  .video-container, .chat-section {
-    flex: none;
+  .video-area,
+  .chat-area {
     width: 100%;
     margin-bottom: 20px;
+  }
+  .user-video {
+    width: 100px;
+    height: 70px;
+  }
+  .message {
+    max-width: 100%;
   }
 }
 
@@ -406,35 +372,141 @@ h1, h2, h3 {
   .home-form input {
     width: 220px;
   }
-  
-  .video-player p {
-    font-size: 0.8rem;
+  .user-video {
+    width: 80px;
+    height: 50px;
+  }
+  .messages {
+    font-size: 0.9rem;
   }
 }
 
-/**************************************************************
-  EXTRA ANIMATIONS
-***************************************************************/
-@keyframes float3D {
-  0% { transform: translateY(0) rotateY(0deg);}
-  50% { transform: translateY(-10px) rotateY(180deg);}
-  100% { transform: translateY(0) rotateY(360deg);}
+/* Overlay to darken the background when the pop-up is active */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+  backdrop-filter: blur(5px); /* Optional: Adds a blur effect to the background */
+  z-index: 9998; /* Below the pop-up but above everything else */
+  animation: fadeInOverlay 0.3s ease;
 }
 
-@keyframes neonGlow {
-  0%,100% {
-    box-shadow: 0 0 10px rgba(255,255,255,0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255,255,255,0.7);
-  }
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* Pop-up container for join requests */
+.join-requests-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 9999; /* on top of everything */
 }
 
-/**************************************************************
-  UTILS
-***************************************************************/
-@keyframes pulse {
-  0% { transform: scale(1);}
-  50% { transform: scale(1.1);}
-  100% { transform: scale(1);}
+.join-request-popup {
+  background: linear-gradient(-45deg, #0000, #15156b, #00001a, #003516, #00071f, #030926, #01012e, #2e0000, #000000, #000000);
+  background-size: 400% 400%;
+  animation: gradientAnimation 1200s ease infinite;
+  border-radius: 8px;
+  padding: 10px 20px;
+  color: #fff;
+  width: 250px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  backdrop-filter: blur(8px); /* Optional: Adds a blur effect to match the glass-like design */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Optional: Adds a subtle border */
 }
+/* Smooth fade/slide in */
+@keyframes fadeInPopup {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.join-request-popup p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+}
+
+.join-request-popup strong {
+  font-weight: 600;
+}
+
+.join-request-popup button {
+  margin: 5px;
+
+}
+
+/* 1) Make sure your .chat-input container is still a flex row */
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+/* 2) Style the new textarea similarly to your existing input */
+.chat-input .chat-textarea {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  outline: none;
+  resize: none;       /* prevents manual resizing */
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  min-height: 40px;   /* ensures a minimal visible height */
+  max-height: 120px;  /* caps the textarea growth */
+  overflow-y: auto;   /* scroll if it gets too tall */
+}
+
+/* 3) Optionally tweak placeholder styling */
+.chat-input .chat-textarea::placeholder {
+  color: rgba(255,255,255,0.8);
+}
+
+.join-requests-queue {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  color: white;
+}
+
+.join-requests-queue h4 {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 5px;
+}
+
+.join-request-item {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+}
+
+.join-request-item p {
+  margin: 0 0 8px;
+}
+
+.join-request-item .countdown {
+  color: #ffb3b3;
+  font-weight: bold;
+}
+
+.request-buttons {
+  display: flex;
+}
+

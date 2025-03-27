@@ -1,48 +1,153 @@
 import React, { useRef, useEffect, useState } from 'react';
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
+import 'videojs-youtube'; // <-- Important import to enable YouTube support
 
 function VideoPlayer({ socket, roomId }) {
-  const videoRef = useRef(null);
-  const lastSeekEmittedRef = useRef(0);
-  const [videoSrc, setVideoSrc] = useState(null);
+  // References
+  const videoNodeRef = useRef(null); // <video> element
+  const playerRef = useRef(null);    // Video.js player instance
+  const fileInputRef = useRef(null); // For selecting local files
 
+  // Prevent local <-> remote event loops
+  const isRemoteActionRef = useRef(false);
 
+  // Store your current video source and link input
+  const [videoSrc, setVideoSrc] = useState(null); // { src: ..., type: ... }
+  const [videoLink, setVideoLink] = useState('');
+
+  // Small threshold (in seconds) to ignore minor differences in currentTime
+  const SYNC_THRESHOLD = 3;
+
+  // ------------------------------------------------------------------
+  // A) Create / Dispose the Video.js player exactly once
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    if (!playerRef.current) {
+      // Create the Video.js player
+      playerRef.current = videojs(videoNodeRef.current, {
+        controls: true, // show native controls
+        autoplay: false,
+        fluid: true,    // responsive sizing
+      });
+
+      // Attach local event listeners for sync
+      attachLocalEventListeners(playerRef.current);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.dispose();
+        playerRef.current = null;
+      }
+    };
+  }, []);
+
+  // ------------------------------------------------------------------
+  // B) Whenever "videoSrc" changes, update the player's source
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player || !videoSrc) return;
+    player.src(videoSrc);
+  }, [videoSrc]);
+
+  // ------------------------------------------------------------------
+  // C) Local event listeners => emit
+  // ------------------------------------------------------------------
+  function attachLocalEventListeners(player) {
+    player.on('play', () => {
+      console.log('[LOCAL] play event');
+      if (isRemoteActionRef.current) {
+        isRemoteActionRef.current = false;
+        return;
+      }
+      emitVideoEvent('play', player.currentTime());
+    });
+
+    player.on('pause', () => {
+      console.log('[LOCAL] pause event');
+      if (isRemoteActionRef.current) {
+        isRemoteActionRef.current = false;
+        return;
+      }
+      emitVideoEvent('pause', player.currentTime());
+    });
+
+    player.on('seeked', () => {
+      console.log('[LOCAL] seeked event');
+      if (isRemoteActionRef.current) {
+        isRemoteActionRef.current = false;
+        return;
+      }
+      const newTime = player.currentTime();
+      emitVideoEvent('seek', newTime);
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // D) Socket: Listen for REMOTE play / pause / seek
+  // ------------------------------------------------------------------
   useEffect(() => {
     if (!socket) return;
 
-    // Another client started playing the video
     const handleRemotePlay = ({ currentTime }) => {
-      console.log('[DEBUG - VideoPlayer] Received video:play, time=', currentTime);
-      const videoEl = videoRef.current;
-      if (videoEl) {
-        videoEl.currentTime = currentTime;
-        if (videoEl.paused) {
-          videoEl.play().catch(err => console.error('[DEBUG] play() error:', err));
-        }
+      console.log('[REMOTE] play ->', currentTime);
+      const player = playerRef.current;
+      if (!player) return;
+
+      // Compare local vs remote times
+      const diff = Math.abs(player.currentTime() - currentTime);
+      console.log('[REMOTE] time diff:', diff);
+
+      // If difference is big, we adjust
+      if (diff > SYNC_THRESHOLD) {
+        isRemoteActionRef.current = true;
+        player.currentTime(currentTime);
+      }
+
+      // If currently paused, ensure we actually play
+      if (player.paused()) {
+        isRemoteActionRef.current = true;
+        player.play().catch(err => {
+          console.error('[REMOTE] play() error:', err);
+          isRemoteActionRef.current = false;
+        });
       }
     };
 
-    // Another client paused the video
     const handleRemotePause = ({ currentTime }) => {
-      console.log('[DEBUG - VideoPlayer] Received video:pause, time=', currentTime);
-      const videoEl = videoRef.current;
-      if (videoEl) {
-        videoEl.currentTime = currentTime;
-        if (!videoEl.paused) {
-          videoEl.pause();
-        }
+      console.log('[REMOTE] pause ->', currentTime);
+      const player = playerRef.current;
+      if (!player) return;
+
+      const diff = Math.abs(player.currentTime() - currentTime);
+      if (diff > SYNC_THRESHOLD) {
+        isRemoteActionRef.current = true;
+        player.currentTime(currentTime);
+      }
+
+      // If it’s playing, we pause
+      if (!player.paused()) {
+        isRemoteActionRef.current = true;
+        player.pause();
       }
     };
 
-    // Another client sought the video
     const handleRemoteSeek = ({ currentTime }) => {
-      console.log('[DEBUG - VideoPlayer] Received video:seek, time=', currentTime);
-      const videoEl = videoRef.current;
-      if (videoEl) {
-        videoEl.currentTime = currentTime;
-        lastSeekEmittedRef.current = currentTime;
+      console.log('[REMOTE] seek ->', currentTime);
+      const player = playerRef.current;
+      if (!player) return;
+
+      const diff = Math.abs(player.currentTime() - currentTime);
+      if (diff > SYNC_THRESHOLD) {
+        isRemoteActionRef.current = true;
+        player.currentTime(currentTime);
       }
     };
 
+    // Attach these socket handlers
     socket.on('video:play', handleRemotePlay);
     socket.on('video:pause', handleRemotePause);
     socket.on('video:seek', handleRemoteSeek);
@@ -54,113 +159,146 @@ function VideoPlayer({ socket, roomId }) {
     };
   }, [socket]);
 
-  // Local triggers
+  // ------------------------------------------------------------------
+  // E) Emit local events to server
+  // ------------------------------------------------------------------
+  function emitVideoEvent(type, currentTime) {
+    if (!socket) return;
+    console.log(`[LOCAL] Emitting ${type} -> ${currentTime}`);
+    socket.emit(`video:${type}`, { roomId, currentTime });
+  }
 
+  // ------------------------------------------------------------------
+  // F) Optional manual controls: skip/restart
+  // ------------------------------------------------------------------
   const handlePlay = () => {
-    const videoEl = videoRef.current;
-    if (!videoEl || !socket) return;
-
-    console.log('[DEBUG - VideoPlayer] Emitting video:play');
-    socket.emit('video:play', { roomId, currentTime: videoEl.currentTime });
-    videoEl.play().catch(err => console.error('[DEBUG] local play() error:', err));
+    const player = playerRef.current;
+    if (!player) return;
+    isRemoteActionRef.current = false;
+    player.play();
+    emitVideoEvent('play', player.currentTime());
   };
 
   const handlePause = () => {
-    const videoEl = videoRef.current;
-    if (!videoEl || !socket) return;
-
-    console.log('[DEBUG - VideoPlayer] Emitting video:pause');
-    socket.emit('video:pause', { roomId, currentTime: videoEl.currentTime });
-    videoEl.pause();
+    const player = playerRef.current;
+    if (!player) return;
+    isRemoteActionRef.current = false;
+    player.pause();
+    emitVideoEvent('pause', player.currentTime());
   };
 
-  const handleSkip = (seconds) => {
-    const videoEl = videoRef.current;
-    if (!videoEl || !socket) return;
-
-    videoEl.currentTime += seconds;
-    console.log('[DEBUG - VideoPlayer] Emitting video:seek (skip)', videoEl.currentTime);
-    socket.emit('video:seek', { roomId, currentTime: videoEl.currentTime });
-    lastSeekEmittedRef.current = videoEl.currentTime;
+  const handleSkip = (secs) => {
+    const player = playerRef.current;
+    if (!player) return;
+    isRemoteActionRef.current = false;
+    const newTime = player.currentTime() + secs;
+    player.currentTime(newTime);
+    emitVideoEvent('seek', newTime);
   };
 
-  const handleSeeked = () => {
-    const videoEl = videoRef.current;
-    if (!videoEl || !socket) return;
+  const handleRestart = () => {
+    const player = playerRef.current;
+    if (!player) return;
+    console.log('[LOCAL] Restarting video');
+    isRemoteActionRef.current = false;
+    player.currentTime(0);
+    emitVideoEvent('seek', 0);
+  };
 
-    const newTime = videoEl.currentTime;
-    const diff = Math.abs(newTime - lastSeekEmittedRef.current);
-    if (diff > 0.2) {
-      console.log('[DEBUG - VideoPlayer] Emitting video:seek (onSeeked)', newTime);
-      socket.emit('video:seek', { roomId, currentTime: newTime });
-      lastSeekEmittedRef.current = newTime;
+  // ------------------------------------------------------------------
+  // G) Local File selection
+  // ------------------------------------------------------------------
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    console.log('[LOCAL] File Selected:', file.name);
+    const url = URL.createObjectURL(file);
+    setVideoSrc({ src: url, type: 'video/mp4' }); // typical local MP4
+  };
+
+  // ------------------------------------------------------------------
+  // H) Link selection (YouTube or direct MP4 link)
+  // ------------------------------------------------------------------
+  const handleVideoLink = () => {
+    // Basic detection
+    const linkLower = videoLink.toLowerCase();
+    if (linkLower.includes('youtube.com') || linkLower.includes('youtu.be')) {
+      // Use the videojs-youtube plugin
+      setVideoSrc({ src: videoLink, type: 'video/youtube' });
     } else {
-      console.log('[DEBUG - VideoPlayer] onSeeked called, diff < 0.2s, skipping emit');
+      // Assume it's direct (MP4, etc.)
+      setVideoSrc({ src: videoLink, type: 'video/mp4' });
     }
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      const url = URL.createObjectURL(file); // Create a temporary URL
-      setVideoSrc(url);
-    }
-  };
+  // ------------------------------------------------------------------
+  // Render
+  // ------------------------------------------------------------------
   return (
     <div className="video-player">
-      <h3>Synchronized Video Player</h3>
-      <p>Play a local video from /public folder</p>
-      {videoSrc && (
-      <video
-        ref={videoRef}
-        width="400"
-        controls
-        onSeeked={handleSeeked}
-      >
-        <source src={videoSrc} type="video/mp4" />
-        {/* Use the same filename that you placed in public/. */}
-        Your browser does not support HTML5 video.
+      {/* The container for Video.js */}
+      <div className="video-container" data-vjs-player>
+        <video
+          ref={videoNodeRef}
+          className="video-js vjs-big-play-centered"
+        />
+      </div>
 
-      </video>)}
-      <input
-        type="file"
-        accept="video/*"
-        onChange={handleFileChange}
-        className="mb-4 p-2 border border-gray-300 rounded"
-      />
-      <div style={{ marginTop: '10px' }}>
-        <button className='glass-button' onClick={handlePlay}>Play</button>
-        <button className='glass-button' onClick={handlePause} style={{ marginLeft: '10px' }}>Pause</button>
-        <button className='glass-button' onClick={() => handleSkip(10)} style={{ marginLeft: '10px' }}>Forward 10s</button>
-        <button className='glass-button' onClick={() => handleSkip(-10)} style={{ marginLeft: '10px' }}>Backward 10s</button>
+      <div style={{ marginTop: '15px' }}>
+        {/* Local File Selection */}
+        <button
+          className="glass-button"
+          onClick={() => fileInputRef.current?.click()}
+          style={{ marginBottom: '10px', padding: '6px 12px', fontSize: '0.8rem' }}
+        >
+          Select Local File
+        </button>
+        <input
+          type="file"
+          accept="video/*"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+        <br />
+
+        {/* Video Link Input */}
+        <input
+          type="text"
+          placeholder="Paste YouTube or direct video link"
+          value={videoLink}
+          onChange={(e) => setVideoLink(e.target.value)}
+          style={{ width: '60%', marginRight: '10px', marginTop: '10px' }}
+        />
+        <button
+          className="glass-button"
+          onClick={handleVideoLink}
+          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+        >
+          Load Link
+        </button>
+      </div>
+
+      {/* Additional manual controls */}
+      <div style={{ marginTop: '15px' }}>
+        <button className="glass-button" onClick={() => handleSkip(-10)}>
+          Backward 10s
+        </button>
+        <button className="glass-button" onClick={handlePlay} style={{ marginLeft: '10px' }}>
+          Play
+        </button>
+        <button className="glass-button" onClick={handlePause} style={{ marginLeft: '10px' }}>
+          Pause
+        </button>
+        <button className="glass-button" onClick={() => handleSkip(10)} style={{ marginLeft: '10px' }}>
+          Forward 10s
+        </button>
+        <button className="glass-button" onClick={handleRestart} style={{ marginLeft: '10px' }}>
+          Restart
+        </button>
       </div>
     </div>
   );
 }
 
-
-const VideoUploader = () => {
- 
-
-  return (
-    <div className="flex flex-col items-center p-4">
-      
-
-      {videoSrc && (
-        <video
-          controls
-          src={videoSrc}
-          className="w-3/4 border border-gray-500 rounded-lg"
-        />
-      )}
-    </div>
-  );
-};
-
-
-
 export default VideoPlayer;
-
-
-
