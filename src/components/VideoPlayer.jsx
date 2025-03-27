@@ -7,7 +7,7 @@ function VideoPlayer({ socket, roomId }) {
   // References
   const videoNodeRef = useRef(null); // <video> element
   const playerRef = useRef(null);    // Video.js player instance
-  const fileInputRef = useRef(null); // For selecting local files
+   const fileInputRef = useRef(null); // For selecting local files
 
   // Prevent local <-> remote event loops
   const isRemoteActionRef = useRef(false);
